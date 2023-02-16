@@ -1,47 +1,54 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, ProgressViewIOSBase, ScrollView } from 'react-native';
-import { reqAPI, wait3SecondsAsync } from './importPromise';
-import { useState, useEffect } from 'react';
 
 export default function App() {
 
-  const [ cargando, setCargando ] = useState('Cargando...');
-  const [ pokemon, setPokemon ] = useState();
-
-  const waitPlease = async (showResolve) => {
-    try {
-      const result = await wait3SecondsAsync(showResolve);
-      setCargando(`${result}`);
-    } catch (error) {
-      setCargando(`catch: ${error}`);
-    }
-
-    try {
-      
-      const PokemonDelAPI = await reqAPI.get("/ditto");
-      setPokemon(PokemonDelAPI);
-      
-    } catch (error) {
-      const { message } = error;
-      setPokemon(message);
-    }
-  };
-
-  useEffect(() => {
-    waitPlease(true);
-  },[]);
   return (
-      <View style={styles.container}>
-        
-        <Text style={styles.sectionContainer}>
-              {cargando}
-            </Text>
+    <View style={styles.container}>
+       
+        <TextInput placeholder="Ingrese el ID o nombre del Pokemon"/>
+        <Text>{"\n\n\n"}</Text>
 
-            <Text style={styles.sectionContainer}>
-              {JSON.stringify(pokemon, null, 2)}
-            </Text>
+        <Text style={styles.sectionContainer}>
+            Acá va el nombre del pokemon
+        </Text>
+
+        <Text>{"\n\n\n"}</Text>
+
+        <Text style={styles.sectionContainer}>
+            Acá va el tipo del pokemon
+        </Text>
+
+        <Text>{"\n\n\n"}</Text>
+
+        <Text style={styles.sectionContainer}>
+            Acá va la descripción del pokemon
+        </Text>
+
+        <Text>{"\n\n\n"}</Text>
+
+        <Text style={styles.sectionContainer}>
+        Tipos a los que NO le hace daño,{"\n"}
+        Tipos a los que hace la mitad de daño,{"\n"}
+        Tipos a los que les hace el doble de daño,{"\n"}
+        Tipos a los que recibe el doble de daño,
+        </Text>
+
+        <Text>{"\n\n\n"}</Text>
+
+        <Text style={styles.sectionContainer}>
+        Posibles movimientos (Ataques) {"\n"}
+        ordenados alfabéticamente {"\n"}
+        (Flamethrower, Ice Beam, etc...).
+        </Text>
+
+        <Text>{"\n\n\n"}</Text>
+
+        <Text style={styles.sectionContainer}>
+            Cadena evolutiva (si aplica)
+        </Text>
         
-      </View>
+    </View>
   );
 }
 
@@ -51,5 +58,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  }
 });
