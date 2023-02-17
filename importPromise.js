@@ -8,5 +8,5 @@ export const wait3SecondsAsync = async (showResolve = true) => {
 };
 
 export const reqAPI = axios.create({
-  baseURL: 'https://pokeapi.co/api/v2/pokemon',
+  baseURL: 'https://pokeapi.co/api/v2',
 });
