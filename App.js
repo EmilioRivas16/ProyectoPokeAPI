@@ -6,7 +6,6 @@ import { useState, useEffect } from 'react';
 export default function App() {
 
   const [ cargando, setCargando ] = useState('Cargando...');
-  const [ pokemon, setPokemon ] = useState();
 
   const [ name, setPokemonName ] = useState();
   const [ types, setPokemonType ] = useState();
