@@ -16,7 +16,7 @@ export default function App() {
   const [ MakeDoubleDamage, setMakeDoubleDamage ] = useState();
   const [ RecieveDoubleDamage, setRecieveDoubleDamage ] = useState();
 
-  let nombreOnumero = "13";
+  let nombreOnumero = "31";
 
   const waitPlease = async (showResolve) => {
     try {
@@ -33,12 +33,12 @@ export default function App() {
       //DESESTRUCTURANDO NOMBRE Y TIPO
       const { data: {name, types}} = await reqAPI.get(`/pokemon/${nombreOnumero}`);
       setPokemonName(name);
-      const tipos = types;
-      //setPokemonType(types) //Imprime TODO
-      const [{ type: { name: nombreDelTipo } }] = tipos;
-      setPokemonType(nombreDelTipo)
 
-
+      //COMO HAY VARIOS TIPOS USO LA FUNCIÓN MAP() PARA GUARDARLOS EN UN ARREGLO Y LUEGO CONVERTIRLOS A STRING
+      const tiposenarreglo = types.map(tipos =>tipos.type.name)
+      tipos = tiposenarreglo.toString();
+      setPokemonType(tipos)
+      const [{ type: { url: urlDelTipo } }] = types;
 
       //DESESTRUCTURANDO LA DESCRIPCIÓN
       const { data: {flavor_text_entries}} = await reqAPI.get(`/pokemon-species/${nombreOnumero}`);
@@ -49,19 +49,23 @@ export default function App() {
 
 
       //DESESTRUCTURANDO DAÑOS
-      const { data: {damage_relations: {double_damage_from, double_damage_to, half_damage_to, no_damage_to}}} = await reqAPI.get(`/type/${nombreOnumero}`);
-      //setRecieveDoubleDamage(double_damage_from); //Imprime TODO
-      const [{ name: RecibeDobleDeDañoDe }] = double_damage_from;
-      setRecieveDoubleDamage(RecibeDobleDeDañoDe);
+      const { data: {damage_relations: {double_damage_from, double_damage_to, half_damage_to, no_damage_to}}} = await reqAPI.get(urlDelTipo);
 
-      const [{ name: HaceElDobleDeDaño }] = double_damage_to;
-      setMakeDoubleDamage(HaceElDobleDeDaño);
+      const RecibeDobleDeDañoDe = double_damage_from.map(ddf =>ddf.name)
+      rddd = RecibeDobleDeDañoDe.toString();
+      setRecieveDoubleDamage(rddd)
 
-      const [{ name: HaceLaMitadDeDaño }] = half_damage_to;
-      setMakeHalfDamage(HaceLaMitadDeDaño);
+      const HaceElDobleDeDaño = double_damage_to.map(ddt =>ddt.name)
+      hddd = HaceElDobleDeDaño.toString();
+      setMakeDoubleDamage(hddd)
 
-      const [{ name: NoLeHaceDaño }] = no_damage_to;
-      setNoMakeDamage(NoLeHaceDaño);
+      const HaceLaMitadDeDaño = half_damage_to.map(hdt =>hdt.name)
+      hmdd = HaceLaMitadDeDaño.toString();
+      setMakeHalfDamage(hmdd)
+
+      const NoLeHaceDaño = no_damage_to.map(ndt =>ndt.name)
+      nhd = NoLeHaceDaño.toString();
+      setNoMakeDamage(nhd)
 
       
     } catch (error) {
@@ -83,45 +87,31 @@ export default function App() {
         </Text>
        
         <TextInput placeholder="Ingrese el ID o nombre del Pokemon"/>
-        <Text>{"\n\n\n"}</Text>
+        <Text>{"\n\n"}</Text>
 
         <Text style={styles.sectionContainer}>
             Nombre: {JSON.stringify(name, null, 2)}
         </Text>
 
-        <Text>{"\n\n\n"}</Text>
+        <Text>{"\n\n"}</Text>
 
         <Text style={styles.sectionContainer}>
-          Tipos (de momento solo muestra uno):{JSON.stringify(types, null, 2)}
+          Tipos:{JSON.stringify(types, null, 2)}
         </Text>
 
-        <Text>{"\n\n\n"}</Text>
+        <Text>{"\n\n"}</Text>
 
         <Text style={styles.sectionContainer}>
           Descripción: {JSON.stringify(description, null, 2)}
         </Text>
 
-        <Text>{"\n\n\n"}</Text>
+        <Text>{"\n\n"}</Text>
 
         <Text style={styles.sectionContainer}>
-        No le hace daño a: {JSON.stringify(NoMakeDamage, null, 2)}{"\n"}
-        Le hace la mitad de daño a: {JSON.stringify(MakeHalfDamage, null, 2)}{"\n"}
-        Le hace el doble de daño a: {JSON.stringify(MakeDoubleDamage, null, 2)}{"\n"}
-        Recibe el doble de daño de: {JSON.stringify(RecieveDoubleDamage, null, 2)}
-        </Text>
-
-        <Text>{"\n\n\n"}</Text>
-
-        <Text style={styles.sectionContainer}>
-        Posibles movimientos (Ataques) {"\n"}
-        ordenados alfabéticamente {"\n"}
-        (Flamethrower, Ice Beam, etc...).
-        </Text>
-
-        <Text>{"\n\n\n"}</Text>
-
-        <Text style={styles.sectionContainer}>
-            Cadena evolutiva (si aplica)
+        No le hace daño a: {"\n"}{JSON.stringify(NoMakeDamage, null, 2)}{"\n\n"}
+        Le hace la mitad de daño a: {"\n"}{JSON.stringify(MakeHalfDamage, null, 2)}{"\n\n"}
+        Le hace el doble de daño a: {"\n"}{JSON.stringify(MakeDoubleDamage, null, 2)}{"\n\n"}
+        Recibe el doble de daño de: {"\n"}{JSON.stringify(RecieveDoubleDamage, null, 2)}
         </Text>
         
     </View>
