@@ -16,7 +16,9 @@ export default function App() {
   const [ MakeDoubleDamage, setMakeDoubleDamage ] = useState();
   const [ RecieveDoubleDamage, setRecieveDoubleDamage ] = useState();
 
-  let nombreOnumero = "42";
+  const [ moves, setMoves ] = useState();
+
+  let nombreOnumero = "10";
 
   const waitPlease = async (showResolve) => {
     try {
@@ -31,13 +33,19 @@ export default function App() {
     try {
       
       //DESESTRUCTURANDO NOMBRE Y TIPO
-      const { data: {name, types}} = await reqAPI.get(`/pokemon/${nombreOnumero}`);
+      const { data: {name, types, moves}} = await reqAPI.get(`/pokemon/${nombreOnumero}`);
       setPokemonName(name);
 
       //COMO HAY VARIOS TIPOS USO LA FUNCIÓN MAP() PARA GUARDARLOS EN UN ARREGLO Y LUEGO CONVERTIRLOS A STRING
       const tiposenarreglo = types.map(tipos =>tipos.type.name)
       tipos = tiposenarreglo.toString();
       setPokemonType(tipos)
+
+      //DESESTRUCTURANDO LOS "MOVES"
+      const movesenarreglo = moves.map(movimientos =>movimientos.move.name)
+      movesenarreglo.sort();
+      movimientos = movesenarreglo.toString();
+      setMoves(movimientos);
 
       const urltiposenarreglo = types.map(tipos =>tipos.type.url) //arreglo con las urls de los tipos
 
@@ -122,7 +130,9 @@ export default function App() {
   },[]);
 
   return (
+    
     <View style={styles.container}>
+      <ScrollView>
 
         <Text style={styles.sectionContainer}>
             {"\n\n\n"}
@@ -156,6 +166,14 @@ export default function App() {
         Le hace el doble de daño a: {"\n"}{JSON.stringify(MakeDoubleDamage, null, 2)}{"\n\n"}
         Recibe el doble de daño de: {"\n"}{JSON.stringify(RecieveDoubleDamage, null, 2)}
         </Text>
+
+        <Text>{"\n\n"}</Text>
+
+        <Text style={styles.sectionContainer}>
+          Movimientos: {JSON.stringify(moves, null, 2)}
+        </Text>
+
+        </ScrollView>
         
     </View>
   );
