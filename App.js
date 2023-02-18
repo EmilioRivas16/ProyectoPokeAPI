@@ -16,7 +16,10 @@ export default function App() {
   const [ MakeDoubleDamage, setMakeDoubleDamage ] = useState();
   const [ RecieveDoubleDamage, setRecieveDoubleDamage ] = useState();
 
-  let nombreOnumero = "42";
+  const [ moves, setMoves ] = useState();
+  const [ evolution, setEvolution ] = useState();
+
+  let nombreOnumero = "onix";
 
   const waitPlease = async (showResolve) => {
     try {
@@ -30,8 +33,8 @@ export default function App() {
 
     try {
       
-      //DESESTRUCTURANDO NOMBRE Y TIPO
-      const { data: {name, types}} = await reqAPI.get(`/pokemon/${nombreOnumero}`);
+      //NOMBRE,TIPO y ATAQUES
+      const { data: {name, types, moves}} = await reqAPI.get(`/pokemon/${nombreOnumero}`);
       setPokemonName(name);
 
       //COMO HAY VARIOS TIPOS USO LA FUNCIÓN MAP() PARA GUARDARLOS EN UN ARREGLO Y LUEGO CONVERTIRLOS A STRING
@@ -39,9 +42,15 @@ export default function App() {
       tipos = tiposenarreglo.toString();
       setPokemonType(tipos)
 
+      // MOVES
+      const movesenarreglo = moves.map(movimientos =>movimientos.move.name)
+      movesenarreglo.sort();
+      movimientos = movesenarreglo.toString();
+      setMoves(movimientos);
+
       const urltiposenarreglo = types.map(tipos =>tipos.type.url) //arreglo con las urls de los tipos
 
-      //DESESTRUCTURANDO DAÑOS
+      // DAÑOS
 
       //Declaración de arreglos vacios donde se guardaran los daños
       var arreglodetiposNHD = [];
@@ -96,12 +105,8 @@ export default function App() {
       setRecieveDoubleDamage(stringRDDD)
       setNoMakeDamage(stringNHD);
 
-
-
-
-
       
-      //DESESTRUCTURANDO LA DESCRIPCIÓN
+      // DESCRIPCIÓN
       const { data: {flavor_text_entries}} = await reqAPI.get(`/pokemon-species/${nombreOnumero}`);
       const todaslasdescripciones = flavor_text_entries
       const text  = todaslasdescripciones.find(entry => entry.language.name === "es");
@@ -110,7 +115,53 @@ export default function App() {
 
 
 
-      
+
+      // EVOLUCIONES
+      const {data: {evolution_chain}} = await reqAPI.get(`https://pokeapi.co/api/v2/pokemon-species/${nombreOnumero}`);
+      const urlEvoChain = evolution_chain.url;
+
+      const todaCadEvo = await reqAPI.get(urlEvoChain);
+      const datosevo = todaCadEvo.data;
+
+
+      const namesOfEvoArray = [];
+      const typesOfEvoArray = [];
+
+      function getPokemonNames(datosevo) {
+        if (datosevo.hasOwnProperty("species")) {
+          namesOfEvoArray.push(datosevo.species.name);
+        }
+
+        if (datosevo.hasOwnProperty("evolves_to") && datosevo.evolves_to.length > 0) {
+          for (let i = 0; i < datosevo.evolves_to.length; i++) {
+            getPokemonNames(datosevo.evolves_to[i]);
+          }
+        }
+      }
+
+      getPokemonNames(datosevo.chain);
+
+
+      for (let x = 0; x < namesOfEvoArray.length; x++) {
+        const nombreDeEvo = namesOfEvoArray[x];
+        const { data: {types}} = await reqAPI.get(`https://pokeapi.co/api/v2/pokemon/${nombreDeEvo}`);
+        const tiposenarreglo = types.map(tipos =>tipos.type.name)
+        tipos = tiposenarreglo.toString();
+        typesOfEvoArray.push(tipos);
+      }
+
+
+      let result = "";
+
+      for (let i = 0; i < namesOfEvoArray.length; i++) {
+        if (i > 0) {
+          result += " -> ";
+        }
+        result += namesOfEvoArray[i] + " (" + typesOfEvoArray[i] + ")";
+      }
+
+      setEvolution(result);
+
     } catch (error) {
       const { message } = error;
       setPokemon(message);
@@ -122,7 +173,9 @@ export default function App() {
   },[]);
 
   return (
+    
     <View style={styles.container}>
+      <ScrollView>
 
         <Text style={styles.sectionContainer}>
             {"\n\n\n"}
@@ -156,6 +209,20 @@ export default function App() {
         Le hace el doble de daño a: {"\n"}{JSON.stringify(MakeDoubleDamage, null, 2)}{"\n\n"}
         Recibe el doble de daño de: {"\n"}{JSON.stringify(RecieveDoubleDamage, null, 2)}
         </Text>
+
+        <Text>{"\n\n"}</Text>
+
+        <Text style={styles.sectionContainer}>
+          Movimientos: {JSON.stringify(moves, null, 2)}
+        </Text>
+
+        <Text>{"\n\n"}</Text>
+
+        <Text style={styles.sectionContainer}>
+          Evolución: {JSON.stringify(evolution, null, 2)}
+        </Text>
+
+        </ScrollView>
         
     </View>
   );
@@ -167,5 +234,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  }
 });
