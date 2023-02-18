@@ -1,30 +1,27 @@
 import { StatusBar } from 'expo-status-bar';
+import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, ScrollView } from 'react-native';
 import { reqAPI, wait2SecondsAsync } from './importPromise';
-import { useState, useEffect } from 'react';
-
 
 export default function App() {
-
-  const [ cargando, setCargando ] = useState('');
+  const [cargando, setCargando] = useState('');
   const [text, setText] = useState('');
 
-  const [ name, setPokemonName ] = useState();
-  const [ types, setPokemonType ] = useState();
-  const [ description, setPokemonDescription ] = useState();
+  const [name, setPokemonName] = useState<string | undefined>();
+  const [types, setPokemonType] = useState<string | undefined>();
+  const [description, setPokemonDescription] = useState<string | undefined>();
 
-  const [ NoMakeDamage, setNoMakeDamage ] = useState();
-  const [ MakeHalfDamage, setMakeHalfDamage ] = useState();
-  const [ MakeDoubleDamage, setMakeDoubleDamage ] = useState();
-  const [ RecieveDoubleDamage, setRecieveDoubleDamage ] = useState();
+  const [NoMakeDamage, setNoMakeDamage] = useState<string | undefined>();
+  const [MakeHalfDamage, setMakeHalfDamage] = useState<string | undefined>();
+  const [MakeDoubleDamage, setMakeDoubleDamage] = useState<string | undefined>();
+  const [RecieveDoubleDamage, setRecieveDoubleDamage] = useState<string | undefined>();
 
-  const [ moves, setMoves ] = useState();
-  const [ evolution, setEvolution ] = useState();
+  const [moves, setMoves] = useState<string | undefined>();
+  const [evolution, setEvolution] = useState<string | undefined>();
 
-  let textSinEspacios = text.trim() //Eliminando espacios en blanco del texto ingresado
-  let nombreOnumero = textSinEspacios.toLowerCase(); //Convirtiendo a minuscula todo
+  let nombreOnumero = text.trim().toLowerCase(); //trim() elimina espacios en blanco y toLowerCase() vuelve todo minuscula
 
-  const waitPlease = async (showResolve) => {
+  const waitPlease = async (showResolve:any) => {
     try {
 
       setCargando('Cargando...'); // Actualizar el estado de cargando al darle enter
@@ -36,17 +33,17 @@ export default function App() {
       setPokemonName(name);
 
       //COMO HAY VARIOS TIPOS USO LA FUNCIÓN MAP() PARA GUARDARLOS EN UN ARREGLO Y LUEGO CONVERTIRLOS A STRING
-      const tiposenarreglo = types.map(tipos =>tipos.type.name)
-      tipos = tiposenarreglo.toString();
-      setPokemonType(tipos)
+      const tiposenarreglo = types.map((tipos: any) => tipos.type.name);
+      const tipos = tiposenarreglo.toString();
+      setPokemonType(tipos);
 
       // MOVES
-      const movesenarreglo = moves.map(movimientos =>movimientos.move.name)
+      const movesenarreglo = moves.map((movimientos: any) => movimientos.move.name);
       movesenarreglo.sort();
-      movimientos = movesenarreglo.toString();
+      const movimientos = movesenarreglo.toString();
       setMoves(movimientos);
 
-      const urltiposenarreglo = types.map(tipos =>tipos.type.url) //arreglo con las urls de los tipos
+      const urltiposenarreglo = types.map((tipos: any) => tipos.type.url); //arreglo con las urls de los tipos
 
       // DAÑOS
 
@@ -58,27 +55,24 @@ export default function App() {
 
       // En este ciclo for se recibe y procesa cada URL de los tipos que sea el pokemon
       for (let i = 0; i < urltiposenarreglo.length; i++) {
-
         const urlDelTipo = urltiposenarreglo[i];
-
-        const { data: {damage_relations: {double_damage_from,double_damage_to,half_damage_to,no_damage_to}}} = await reqAPI.get(urlDelTipo);
-        
-        const NoLeHaceDaño = no_damage_to.map(ndt =>ndt.name)
-        nhd = NoLeHaceDaño.toString();
+        const { data: { damage_relations: { double_damage_from, double_damage_to, half_damage_to, no_damage_to } } } = await reqAPI.get(urlDelTipo);
+    
+        const NoLeHaceDaño = no_damage_to.map((ndt: any) => ndt.name);
+        const nhd = NoLeHaceDaño.toString();
         arreglodetiposNHD.push(nhd);
-
-        const RecibeDobleDeDañoDe = double_damage_from.map(ddf =>ddf.name)
-        rddd = RecibeDobleDeDañoDe.toString();
+    
+        const RecibeDobleDeDañoDe = double_damage_from.map((ddf: any) => ddf.name);
+        const rddd = RecibeDobleDeDañoDe.toString();
         arreglodetiposRDDD.push(rddd);
-
-        const HaceElDobleDeDaño = double_damage_to.map(ddt =>ddt.name)
-        hddd = HaceElDobleDeDaño.toString();
+    
+        const HaceElDobleDeDaño = double_damage_to.map((ddt: any) => ddt.name);
+        const hddd = HaceElDobleDeDaño.toString();
         arreglodetiposHDDD.push(hddd);
-
-        const HaceLaMitadDeDaño = half_damage_to.map(hdt =>hdt.name)
-        hmdd = HaceLaMitadDeDaño.toString();
+    
+        const HaceLaMitadDeDaño = half_damage_to.map((hdt: any) => hdt.name);
+        const hmdd = HaceLaMitadDeDaño.toString();
         arreglodetiposHMDD.push(hmdd);
-
       }
 
       
@@ -98,9 +92,9 @@ export default function App() {
       let stringNHD = filteredarreglodetiposNHD.toString() //Convirtiendo el arreglo a String
       stringNHD = Array.from(new Set(stringNHD.split(','))).toString(); //Eliminando elementos duplicados (en caso de que haya alguno)
 
-      setMakeHalfDamage(stringHMDD)
-      setMakeDoubleDamage(stringHDDD)
-      setRecieveDoubleDamage(stringRDDD)
+      setMakeHalfDamage(stringHMDD);
+      setMakeDoubleDamage(stringHDDD);
+      setRecieveDoubleDamage(stringRDDD);
       setNoMakeDamage(stringNHD);
 
       
@@ -109,7 +103,7 @@ export default function App() {
       // DESCRIPCIÓN
       const { data: {flavor_text_entries}} = await reqAPI.get(`/pokemon-species/${nombreOnumero}`);
       const todaslasdescripciones = flavor_text_entries
-      const text  = todaslasdescripciones.find(entry => entry.language.name === "es");
+      const text  = todaslasdescripciones.find((entry:any) => entry.language.name === "es");
       const { flavor_text } = text;
       setPokemonDescription(flavor_text);
 
@@ -145,8 +139,8 @@ export default function App() {
       for (let x = 0; x < namesOfEvoArray.length; x++) {
         const nombreDeEvo = namesOfEvoArray[x];
         const { data: {types}} = await reqAPI.get(`https://pokeapi.co/api/v2/pokemon/${nombreDeEvo}`);
-        const tiposenarreglo = types.map(tipos =>tipos.type.name)
-        tipos = tiposenarreglo.toString();
+        const tiposenarreglo = types.map((tipos:any) =>tipos.type.name)
+        const tipos = tiposenarreglo.toString();
         typesOfEvoArray.push(tipos);
       }
 
@@ -167,14 +161,13 @@ export default function App() {
 
     } catch (error) {
       const { message } = error;
-      setPokemon(message);
     }
 
   }; 
 
   return (
     
-    <View style={styles.container}>
+    <View style={styles.sectionContainer}>
       <ScrollView>
 
         <Text style={styles.sectionContainer}>
@@ -234,7 +227,7 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  sectionContainer: {
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
