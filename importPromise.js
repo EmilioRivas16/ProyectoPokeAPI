@@ -1,8 +1,8 @@
 import axios from "axios";
 
-export const wait2SecondsAsync = async (showResolve = true) => {
+export const waitingTimeAsync = async (showResolve = true) => {
   const promise = new Promise((resolve, reject) => {
-    setTimeout(() => showResolve ? resolve("") : reject("Hubo un error"),2000);
+    setTimeout(() => showResolve ? resolve("") : reject("Hubo un error"),3000);
   });
   return promise;
 };
