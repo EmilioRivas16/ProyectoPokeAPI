@@ -15,7 +15,7 @@ const PokemonEvolutions: React.FC<Props> = ({ evolutions, show }) => {
 const styles = StyleSheet.create({
   pokemonEvolutions: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   pokemonEvolutionsDesc: {
     padding: 5,

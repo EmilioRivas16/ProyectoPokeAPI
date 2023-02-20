@@ -10,3 +10,5 @@ interface interfacePokemon {
     evolutions: string;
     image: string;
   }
+
+
