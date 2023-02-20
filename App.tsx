@@ -1,32 +1,61 @@
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, ScrollView } from 'react-native';
-import { reqAPI, wait2SecondsAsync } from './importPromise';
+import { reqAPI, waitingTimeAsync } from './importPromise';
+import { Image } from 'react-native';
+
+
+import PokemonName from './components/PokemonName';
+import PokemonType from './components/PokemonType';
+import PokemonDescription from './components/PokemonDescription';
+import PokemonWeaknesses from './components/PokemonWeaknesses';
+import PokemonMoves from './components/PokemonMoves';
+import PokemonEvolutions from './components/PokemonEvolutions';
 
 export default function App() {
-  const [cargando, setCargando] = useState('');
+  const [cargando, setCargando] = useState(false);
+  const [showData, setShowData] = useState(false);
+  const [mostrarImagen, setMostrarImagen] = useState(false);
   const [text, setText] = useState('');
+  const [backgroundColor, setBackgroundColor] = useState('#CDFF91');
 
-  const [name, setPokemonName] = useState<string | undefined>();
-  const [types, setPokemonType] = useState<string | undefined>();
-  const [description, setPokemonDescription] = useState<string | undefined>();
+  const [namePokemon, setPokemonName] = useState<string | undefined>();
+  const [typesPokemon, setPokemonType] = useState<string | undefined>();
+  const [descriptionPokemon, setPokemonDescription] = useState<string | undefined>();
 
-  const [NoMakeDamage, setNoMakeDamage] = useState<string | undefined>();
-  const [MakeHalfDamage, setMakeHalfDamage] = useState<string | undefined>();
-  const [MakeDoubleDamage, setMakeDoubleDamage] = useState<string | undefined>();
-  const [RecieveDoubleDamage, setRecieveDoubleDamage] = useState<string | undefined>();
+  const [NoMakeDamagePokemon, setNoMakeDamage] = useState<string | undefined>();
+  const [MakeHalfDamagePokemon, setMakeHalfDamage] = useState<string | undefined>();
+  const [MakeDoubleDamagePokemon, setMakeDoubleDamage] = useState<string | undefined>();
+  const [RecieveDoubleDamagePokemon, setRecieveDoubleDamage] = useState<string | undefined>();
 
-  const [moves, setMoves] = useState<string | undefined>();
-  const [evolution, setEvolution] = useState<string | undefined>();
+  const [movesPokemon, setMoves] = useState<string | undefined>();
+  const [evolutionPokemon, setEvolution] = useState<string | undefined>();
+
+  const pokemon: interfacePokemon = {
+    name: namePokemon,
+    types: typesPokemon,
+    description: descriptionPokemon,
+    noDamageTo: NoMakeDamagePokemon,
+    halfDamageTo: MakeHalfDamagePokemon,
+    doubleDamageTo: MakeDoubleDamagePokemon,
+    doubleDamageFrom: RecieveDoubleDamagePokemon,
+    moves: movesPokemon,
+    evolutions: evolutionPokemon,
+  };
 
   let nombreOnumero = text.trim().toLowerCase(); //trim() elimina espacios en blanco y toLowerCase() vuelve todo minuscula
 
   const waitPlease = async (showResolve:any) => {
     try {
 
-      setCargando('Cargando...'); // Actualizar el estado de cargando al darle enter
-      const result = await wait2SecondsAsync(showResolve); //Esperando 2 segundos a que cargen los datos
-      setCargando(''); //Cuando llegan los datos quitamos el texto de cargando
+      setMostrarImagen(true)
+      setCargando(true); // Mostrar el texto "Cargando..."
+      setBackgroundColor('#78C25C');
+      const result = await waitingTimeAsync(showResolve);// Aquí se hace la solicitud a la API y se actualizan los estados de los datos del Pokémon
+      setCargando(false); // Ocultar el texto "Cargando..."
+      
+      setBackgroundColor('#CDFF91');
 
       //NOMBRE,TIPO y ATAQUES
       const { data: {name, types, moves}} = await reqAPI.get(`/pokemon/${nombreOnumero}`);
@@ -41,7 +70,8 @@ export default function App() {
       const movesenarreglo = moves.map((movimientos: any) => movimientos.move.name);
       movesenarreglo.sort();
       const movimientos = movesenarreglo.toString();
-      setMoves(movimientos);
+      const movimientos_clean = movimientos.split(",").join(", ");
+      setMoves(movimientos_clean);
 
       const urltiposenarreglo = types.map((tipos: any) => tipos.type.url); //arreglo con las urls de los tipos
 
@@ -79,23 +109,43 @@ export default function App() {
       let filteredarreglodetiposHMDD = arreglodetiposHMDD.filter(elm => elm); //Eliminando elementos vacios del arreglo (en caso de que hayan)
       let stringHMDD = filteredarreglodetiposHMDD.toString() //Convirtiendo el arreglo a String
       stringHMDD = Array.from(new Set(stringHMDD.split(','))).toString(); //Eliminando elementos duplicados (en caso de que haya alguno)
+      let stringHMDDfinal = stringHMDD.split(",").join(", ");
+      
+      if (stringHMDDfinal == "") {
+        stringHMDDfinal = "-----"
+      }
 
       let filteredarreglodetiposHDDD = arreglodetiposHDDD.filter(elm => elm); //Eliminando elementos vacios del arreglo (en caso de que hayan)
       let stringHDDD = filteredarreglodetiposHDDD.toString() //Convirtiendo el arreglo a String
       stringHDDD = Array.from(new Set(stringHDDD.split(','))).toString(); //Eliminando elementos duplicados (en caso de que haya alguno)
+      let stringHDDDfinal = stringHDDD.split(",").join(", ");
+
+      if (stringHDDDfinal == "") {
+        stringHDDDfinal = "-----"
+      }
 
       let filteredarreglodetiposRDDD = arreglodetiposRDDD.filter(elm => elm); //Eliminando elementos vacios del arreglo (en caso de que hayan)
       let stringRDDD = filteredarreglodetiposRDDD.toString() //Convirtiendo el arreglo a String
       stringRDDD = Array.from(new Set(stringRDDD.split(','))).toString();  //Eliminando elementos duplicados (en caso de que haya alguno)
+      let stringRDDDfinal = stringRDDD.split(",").join(", ");
+
+      if (stringRDDDfinal == "") {
+        stringRDDDfinal = "-----"
+      }
 
       let filteredarreglodetiposNHD = arreglodetiposNHD.filter(elm => elm); //Eliminando elementos vacios del arreglo (en caso de que hayan)
       let stringNHD = filteredarreglodetiposNHD.toString() //Convirtiendo el arreglo a String
       stringNHD = Array.from(new Set(stringNHD.split(','))).toString(); //Eliminando elementos duplicados (en caso de que haya alguno)
+      let stringNHDfinal = stringNHD.split(",").join(", ");
 
-      setMakeHalfDamage(stringHMDD);
-      setMakeDoubleDamage(stringHDDD);
-      setRecieveDoubleDamage(stringRDDD);
-      setNoMakeDamage(stringNHD);
+      if (stringNHDfinal == "") {
+        stringNHDfinal = "-----"
+      }
+
+      setMakeHalfDamage(stringHMDDfinal);
+      setMakeDoubleDamage(stringHDDDfinal);
+      setRecieveDoubleDamage(stringRDDDfinal);
+      setNoMakeDamage(stringNHDfinal);
 
       
 
@@ -105,7 +155,8 @@ export default function App() {
       const todaslasdescripciones = flavor_text_entries
       const text  = todaslasdescripciones.find((entry:any) => entry.language.name === "es");
       const { flavor_text } = text;
-      setPokemonDescription(flavor_text);
+      const flavor_text_clean = flavor_text.split("\n").join(" ");
+      setPokemonDescription(flavor_text_clean);
 
 
 
@@ -121,7 +172,7 @@ export default function App() {
       const namesOfEvoArray = [];
       const typesOfEvoArray = [];
 
-      function getPokemonNames(datosevo) {
+      function getPokemonNames(datosevo: any) {
         if (datosevo.hasOwnProperty("species")) {
           namesOfEvoArray.push(datosevo.species.name);
         }
@@ -156,81 +207,131 @@ export default function App() {
       setEvolution(resultado);
 
 
-
-
+      //Sirve para establecer que no se muestre nada al iniciar la aplicación
+      setShowData(true);
 
     } catch (error) {
       const { message } = error;
+      setCargando(false);
+      setBackgroundColor('#CDFF91');
     }
 
   }; 
 
+  useEffect(() => {
+    if (cargando) {
+      setBackgroundColor('#78C25C');
+    } else {
+      setBackgroundColor('#CDFF91');
+    }
+  }, [cargando]);
+
+  const handleInputChange = (input) => {
+    setText(input);
+    if (mostrarImagen) { 
+      setMostrarImagen(false);
+    }
+  }
+  
   return (
     
-    <View style={styles.sectionContainer}>
-      <ScrollView>
+    <ScrollView style={[styles.sectionContainer, { backgroundColor: backgroundColor }]}>
 
-        <Text style={styles.sectionContainer}>
-            {"\n\n\n"}
-            {cargando}
-        </Text>
-       
-        <TextInput 
-        placeholder="Ingrese el ID o nombre del Pokemon"
-        value={text}
-        onChangeText={setText}
-        onSubmitEditing={() => waitPlease(true)}
-        />
-        <Text>{"\n\n"}</Text>
-
-        <Text style={styles.sectionContainer}>
-            Nombre: {JSON.stringify(name, null, 2)}
-        </Text>
-
-        <Text>{"\n\n"}</Text>
-
-        <Text style={styles.sectionContainer}>
-          Tipo(s):{JSON.stringify(types, null, 2)}
-        </Text>
-
-        <Text>{"\n\n"}</Text>
-
-        <Text style={styles.sectionContainer}>
-          Descripción: {JSON.stringify(description, null, 2)}
-        </Text>
-
-        <Text>{"\n\n"}</Text>
-
-        <Text style={styles.sectionContainer}>
-        No le hace daño a: {"\n"}{JSON.stringify(NoMakeDamage, null, 2)}{"\n\n"}
-        Le hace la mitad de daño a: {"\n"}{JSON.stringify(MakeHalfDamage, null, 2)}{"\n\n"}
-        Le hace el doble de daño a: {"\n"}{JSON.stringify(MakeDoubleDamage, null, 2)}{"\n\n"}
-        Recibe el doble de daño de: {"\n"}{JSON.stringify(RecieveDoubleDamage, null, 2)}
-        </Text>
-
-        <Text>{"\n\n"}</Text>
-
-        <Text style={styles.sectionContainer}>
-          Movimientos: {JSON.stringify(moves, null, 2)}
-        </Text>
-
-        <Text>{"\n\n"}</Text>
-
-        <Text style={styles.sectionContainer}>
-          Evolución: {JSON.stringify(evolution, null, 2)}
-        </Text>
-
-        </ScrollView>
+      <View style={styles.sectionView}>
         
-    </View>
+
+        <Text>{"\n\n"}</Text>
+        
+          <View style={styles.containerTextInput}>
+            <TextInput 
+              placeholder="Ingrese el ID o nombre del Pokemon"
+              value={text}
+              onChangeText={setText}
+              onSubmitEditing={() => waitPlease(true)}
+              style={styles.sectionInsideContainerTextInput}
+            />
+          </View>
+
+          <Text>{"\n"}</Text>
+
+          {!mostrarImagen &&
+            <Image
+              source={require('./assets/pokebola.png')}
+              style={{ width: 250, height: 250, marginLeft: 55, marginTop: 180 }}
+            />
+          }
+
+          {cargando ? <Text style={styles.textoCargando}>Cargando...</Text> :
+
+          <React.Fragment>
+
+            <PokemonName name={pokemon.name} show={showData} />
+
+            <PokemonType types={pokemon.types} show={showData} />
+
+            <PokemonDescription description={pokemon.description} show={showData} />
+
+            <PokemonWeaknesses
+              noDamageTo={pokemon.noDamageTo}
+              halfDamageTo={pokemon.halfDamageTo}
+              doubleDamageTo={pokemon.doubleDamageTo}
+              doubleDamageFrom={pokemon.doubleDamageFrom}
+              show={showData}
+            />
+
+            <PokemonMoves moves={pokemon.moves} show={showData} />
+
+            <PokemonEvolutions evolutions={pokemon.evolutions} show={showData} />
+
+          </React.Fragment>
+          }
+
+      </View>
+
+      <Text>{"\n\n"}</Text>
+
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   sectionContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    padding: 10,
+    backgroundColor: '#CDFF91',
+    
+  },
+  sectionView: {
+    flex: 1,
+    padding: 5, 
+  },
+  scrollView: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  containerTextInput: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sectionInsideContainerTextInput: {
+    width: 300,
+    height: 30,
+    borderWidth: 3,
+    borderColor: '#3A4231',
+    textAlign: 'center',
+    backgroundColor: '#DFFFD3',
+    borderTopLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    borderBottomLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  textoCargando: {
     alignItems: 'center',
     justifyContent: 'center',
-  }
+    marginTop: 280,
+    marginLeft: 110,
+    fontSize: 25,
+    fontWeight: 'bold'
+  }
 });
