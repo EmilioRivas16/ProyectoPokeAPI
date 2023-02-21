@@ -13,13 +13,13 @@ import PokemonEvolutions from './components/PokemonEvolutions';
 import PokemonImage from './components/PokemonImage';
 
 export default function App() {
-  const [cargando, setCargando] = useState(false);//Establecemos inicialmente el estado del loader como falso (para que cuando se ingrese el pokemon se vuelva true)
-  const [showData, setShowData] = useState(false);//Establecemos inicialmente el estado del mostrar datos como falso (para que cuando termina de cargar se vuelva true)
+  const [cargando, setCargando] = useState(false);
+  const [showData, setShowData] = useState(false);
   const [mostrarImagen, setMostrarImagen] = useState(true);
-  const [text, setText] = useState(''); //Estado para recibir el texto ingresado por el usuario
-  const [backgroundColor, setBackgroundColor] = useState('#CDFF91');//Establecemos el background inicial
+  const [text, setText] = useState(''); 
+  const [backgroundColor, setBackgroundColor] = useState('#CDFF91');
 
-  //Declaración de los estados donde se guardaran los datos de los pokemones
+
   const [namePokemon, setPokemonName] = useState<string | undefined>();
   const [typesPokemon, setPokemonType] = useState<string | undefined>();
   const [descriptionPokemon, setPokemonDescription] = useState<string | undefined>();
@@ -31,7 +31,7 @@ export default function App() {
   const [evolutionPokemon, setEvolution] = useState<string | undefined>();
   const [evolutionImage, setImage] = useState<string | undefined>();
 
-  //Diccionario con los tipos en español
+
   const tiposPokemon = {
     normal: 'normal',
     fire: 'fuego',
@@ -53,14 +53,14 @@ export default function App() {
     fairy: 'hada'
   };
 
-  //Función que traduce strings de los tipos de ingles a español
+
   function traducirTiposPokemon(tiposEnIngles: any) {
     const tipos = tiposEnIngles.split(',').map((tipo: any) => tipo.trim());
     const tiposEnEspañol = tipos.map((tipo: any) => tiposPokemon[tipo] || tipo);
     return tiposEnEspañol.join(', ');
   }
 
-  //Por medio de una interface recibimos los datos
+  
   const pokemon: interfacePokemon = {
     name: namePokemon,
     types: typesPokemon,
@@ -74,103 +74,90 @@ export default function App() {
     image: evolutionImage
   };
 
-  //Guardando el texto ingresado en una variable
-  let nombreOnumero = text.trim().toLowerCase(); //trim() elimina espacios en blanco y toLowerCase() vuelve todo minuscula
+
+  let nombreOnumero = text.trim().toLowerCase(); 
 
   const waitPlease = async (showResolve:any) => {
     try {
 
-      setMostrarImagen(false)//Ocultamos la imagen de la pokebola permanentemente
-      setCargando(true); // Mostrar el texto "Cargando..."
-      setBackgroundColor('#78C25C');//Oscurecemos el background cuando está "Cargando..."
-      const result = await waitingTimeAsync(showResolve);// Aquí se hace la solicitud a la API y se actualizan los estados de los datos del Pokémon
-      setCargando(false); // Ocultar el texto "Cargando..."
-      setBackgroundColor('#CDFF91');//Aclaramos el background cuando termina de cargar
+      setMostrarImagen(false)
+      setCargando(true); 
+      setBackgroundColor('#78C25C');
+      const result = await waitingTimeAsync(showResolve);
+      setCargando(false); 
+      setBackgroundColor('#CDFF91');
 
-      /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+      
 
-      //NOMBRE,TIPO y ATAQUES
-      const { data: {name, types, moves}} = await reqAPI.get(`/pokemon/${nombreOnumero}`); //Ontenemos del API el nombre, tipos y movimientos
-      setPokemonName(name);//Guardamos el nombre del pokemon en su estado correspondiente
+      const { data: {name, types, moves}} = await reqAPI.get(`/pokemon/${nombreOnumero}`); 
+      setPokemonName(name);
 
-      //COMO HAY VARIOS TIPOS USO LA FUNCIÓN MAP() PARA GUARDARLOS EN UN ARREGLO Y LUEGO CONVERTIRLOS A STRING
-      const tipos = types.map((tipos: any) => tipos.type.name).toString(); //Obtenemos el elemento "name" del objeto de los tipos y además lo convertimos a string
-      setPokemonType(traducirTiposPokemon(tipos));//Guardamos el tipo(s) del pokemon en su estado correspondiente
 
-      /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+      const tipos = types.map((tipos: any) => tipos.type.name).toString(); 
+      setPokemonType(traducirTiposPokemon(tipos));
 
-      // MOVES
-      //Obtenemos el nombre del movimiento, .sort() para ordenarlo en orden alfabético y el .toString() para convertirlo a string
+      
+
+
       const movimientos = moves.map((movimientos: any) => movimientos.move.name).sort().toString();
-      const movimientos_clean = movimientos.split(",").join(", "); //Le añadimos un espacio des pues de las comas para arreglar los saltos de línea
-      setMoves(movimientos_clean); //Guardamos los movimientos en su estado correspondiente
+      const movimientos_clean = movimientos.split(",").join(", ");
+      setMoves(movimientos_clean); 
 
-      /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-      // DAÑOS
-
-      //Declaración de arreglos vacios donde se guardaran los daños (De una vez les especifico que tendrán strings)
       const arreglodetiposNHD: string[] = [];
       const arreglodetiposRDDD: string[] = [];
       const arreglodetiposHDDD: string[] = [];
       const arreglodetiposHMDD: string[] = [];
 
-      //Declaramos el for que hará un ciclo por cada tipo que sea el pokemon
+
       for (const tipo of types) {
 
-        const { data } = await reqAPI.get(tipo.type.url); //Obtenermos la url con la info del tipo por medio del api
-        const { double_damage_from, double_damage_to, half_damage_to, no_damage_to } = data.damage_relations; //Desestructuramos para obtener los 4 datos a mostrar
+        const { data } = await reqAPI.get(tipo.type.url); 
+        const { double_damage_from, double_damage_to, half_damage_to, no_damage_to } = data.damage_relations; 
 
-        //Hacemos el push a cada arreglo, además utlizamos la funcion map() para obetener especificamente el nombre de cada tipo
+
         arreglodetiposNHD.push(...no_damage_to.map((ndt: any) => ndt.name));
         arreglodetiposRDDD.push(...double_damage_from.map((ddf: any) => ddf.name));
         arreglodetiposHDDD.push(...double_damage_to.map((ddt: any) => ddt.name));
         arreglodetiposHMDD.push(...half_damage_to.map((hdt: any) => hdt.name));
       }
 
-      //Función para convertir arreglos a string y ponerle formato de "coma y espacio"
+
       const processTypeArray = (typeArray: any) => {
-        // Filtrar elementos vacíos y convertir el arreglo a string
+ 
         let typeString = typeArray.filter(Boolean).toString();
-        // Eliminar elementos duplicados y separar con ", "
+  
         typeString = [...new Set(typeString.split(","))].join(", ");
-        // En caso de que no haya elementos, poner "-----"
+   
         if (typeString === "") {
         typeString = "-----";
         }
         return typeString;
       };
 
-      //Guardamos los daños en sus estados correspondientes, el 'processTypeArray' los convierte a string y el 'traducirTiposPokemon' los traduce a español
+      
       setMakeHalfDamage(traducirTiposPokemon(processTypeArray(arreglodetiposHMDD)));
       setMakeDoubleDamage(traducirTiposPokemon(processTypeArray(arreglodetiposHDDD)));
       setRecieveDoubleDamage(traducirTiposPokemon(processTypeArray(arreglodetiposRDDD)));
       setNoMakeDamage(traducirTiposPokemon(processTypeArray(arreglodetiposNHD)));
 
-      /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+      const { data: {flavor_text_entries}} = await reqAPI.get(`/pokemon-species/${nombreOnumero}`); 
+      const { flavor_text: DescEnEsp }  = flavor_text_entries.find((entry:any) => entry.language.name === "es"); 
+      const DescripcionEnEspañol = DescEnEsp.split("\n").join(" ");
+      setPokemonDescription(DescripcionEnEspañol);
 
-      // DESCRIPCIÓN
-      const { data: {flavor_text_entries}} = await reqAPI.get(`/pokemon-species/${nombreOnumero}`); //Ontenemos la descripción del API
-      const { flavor_text: DescEnEsp }  = flavor_text_entries.find((entry:any) => entry.language.name === "es"); //con la función .find obtenemos la descripción en español
-      const DescripcionEnEspañol = DescEnEsp.split("\n").join(" "); //Le quitamos una \n que hay en la descripción
-      setPokemonDescription(DescripcionEnEspañol);//Guardamos la descripcion en su estado correspondiente
 
-      /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+      const {data: {evolution_chain}} = await reqAPI.get(`https://pokeapi.co/api/v2/pokemon-species/${nombreOnumero}`); 
+      const urlEvoChain = evolution_chain.url; 
 
-      // EVOLUCIONES
-      const {data: {evolution_chain}} = await reqAPI.get(`https://pokeapi.co/api/v2/pokemon-species/${nombreOnumero}`); //Obtenemos el objeto de la cad evo
-      const urlEvoChain = evolution_chain.url; //Obtenermos la url del objeto de la cad evo (esa url nos dará los datos específicos de las evoluciones)
+      const todaCadEvo = await reqAPI.get(urlEvoChain); 
+      const datosevo = todaCadEvo.data; 
 
-      const todaCadEvo = await reqAPI.get(urlEvoChain); //Accedemos a esa URL
-      const datosevo = todaCadEvo.data; //Accedemos al arreglo data dentro de la ruta de la cad evo
 
-      //Declarando arreglos vacios para ir gurdando los datos de la evolución
       const namesOfEvoArray = [];
       const typesOfEvoArray = [];
 
-      //Función para obtener los nombres de cada pokemon de la cadena evolutiva e irlos metiendo a cada uno al arreglo "namesOfEvoArray"
-      //Esta función es necesaria porque la cantidad de evoluciones varía dependiendo el pokemon y además no sabemos si el pokemon ingresado
-      //es el primero o el segundo o el tercero de la cadena evolutiva, esta función se encarga de ese pedo y los pone en orden
+
       function getPokemonNames(datosevo: any) {
         if (datosevo.hasOwnProperty("species")) {
           namesOfEvoArray.push(datosevo.species.name);
@@ -183,40 +170,34 @@ export default function App() {
         }
       }
 
-      //Ejecutamos la función dse arriba
       getPokemonNames(datosevo.chain);
 
-      //Obteniendo los tipos de cada evolución del pokemon
+
       for (let x = 0; x < namesOfEvoArray.length; x++) {
-        const nombreDeEvo = namesOfEvoArray[x]; //El nombre del pokemon va a ser el actual del bucle for
-        const { data: {types}} = await reqAPI.get(`https://pokeapi.co/api/v2/pokemon/${nombreDeEvo}`); //Obtenemos el tipo de pokemon por medio del API
-        const tiposenarreglo = types.map((tipos:any) =>tipos.type.name)//Obtenemos el nombre del tipo
-        const tipos = tiposenarreglo.toString(); //COnvertimos el tipo a string
-        typesOfEvoArray.push(tipos); //Metemos el tipo al arreglo
+        const nombreDeEvo = namesOfEvoArray[x]; 
+        const { data: {types}} = await reqAPI.get(`https://pokeapi.co/api/v2/pokemon/${nombreDeEvo}`); 
+        const tiposenarreglo = types.map((tipos:any) =>tipos.type.name)
+        const tipos = tiposenarreglo.toString(); 
+        typesOfEvoArray.push(tipos); 
       }
 
 
-      // Poniendo los datos de evolución en el formato requerido "Pokemon(tipo)"
+ 
       let resultado = "";
       for (let i = 0; i < namesOfEvoArray.length; i++) {
         if (i > 0) {
-          resultado += " -> "; // Le añadimos a cada Pokemon(tipo) un "->" para separalo del siguiente pokemon
+          resultado += " -> "; 
         }
         const TipoDeCadEvoTraducido =  traducirTiposPokemon(typesOfEvoArray[i])
-        resultado += namesOfEvoArray[i] + " (" + TipoDeCadEvoTraducido + ")"; //Juntamos todo en el formato
+        resultado += namesOfEvoArray[i] + " (" + TipoDeCadEvoTraducido + ")"; 
       }
 
-      setEvolution(resultado); //Guardamos la cadena evolutiva en el estado
-
-      /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-     
-      //IMAGEN POKEMON
+      setEvolution(resultado); 
+    
       const { data: {sprites: { front_default: urlImagenPokemon }}} = await reqAPI.get(`/pokemon/${nombreOnumero}`);//Desestructurando y obteniendo la imagen
-      setImage(urlImagenPokemon);//Guardamos la imagen en su estado correspondiente
+      setImage(urlImagenPokemon);
 
-      /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-      //Sirve para establecer que no se muestre nada al iniciar la aplicación
       setShowData(true);
 
     } catch (error) {
@@ -227,7 +208,7 @@ export default function App() {
 
   }; 
 
-  //Cambiando el 'background' cada vez que esta "Cargando..."
+ 
   useEffect(() => {
     if (cargando) {
       setBackgroundColor('#78C25C');
@@ -236,7 +217,7 @@ export default function App() {
     }
   }, [cargando]);
 
-  //Desaparecemos la imagen de la pokebola cuando se ingresa el primer pokemon
+
   const handleInputChange = (input: any) => {
     setText(input);
     if (mostrarImagen) { 
@@ -272,7 +253,7 @@ export default function App() {
             />
           }
 
-          {/* Condición ternaria para que cuando esté el texto "Cargando..." desaparezcan las etiquetas del pokemon */}
+          
           {cargando ? <Text style={styles.textoCargando}>Cargando...</Text> :
 
           <React.Fragment>
