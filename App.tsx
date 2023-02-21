@@ -31,6 +31,35 @@ export default function App() {
   const [evolutionPokemon, setEvolution] = useState<string | undefined>();
   const [evolutionImage, setImage] = useState<string | undefined>();
 
+  //Diccionario con los tipos en español
+  const tiposPokemon = {
+    normal: 'normal',
+    fire: 'fuego',
+    water: 'agua',
+    electric: 'eléctrico',
+    grass: 'planta',
+    ice: 'hielo',
+    fighting: 'lucha',
+    poison: 'veneno',
+    ground: 'tierra',
+    flying: 'volador',
+    psychic: 'psíquico',
+    bug: 'bicho',
+    rock: 'roca',
+    ghost: 'fantasma',
+    dragon: 'dragón',
+    dark: 'siniestro',
+    steel: 'acero',
+    fairy: 'hada'
+  };
+
+  //Función que traduce strings de los tipos de ingles a español
+  function traducirTiposPokemon(tiposEnIngles: any) {
+    const tipos = tiposEnIngles.split(',').map((tipo: any) => tipo.trim());
+    const tiposEnEspañol = tipos.map((tipo: any) => tiposPokemon[tipo] || tipo);
+    return tiposEnEspañol.join(', ');
+  }
+
   //Por medio de una interface recibimos los datos
   const pokemon: interfacePokemon = {
     name: namePokemon,
@@ -66,7 +95,7 @@ export default function App() {
 
       //COMO HAY VARIOS TIPOS USO LA FUNCIÓN MAP() PARA GUARDARLOS EN UN ARREGLO Y LUEGO CONVERTIRLOS A STRING
       const tipos = types.map((tipos: any) => tipos.type.name).toString(); //Obtenemos el elemento "name" del objeto de los tipos y además lo convertimos a string
-      setPokemonType(tipos);//Guardamos el tipo(s) del pokemon en su estado correspondiente
+      setPokemonType(traducirTiposPokemon(tipos));//Guardamos el tipo(s) del pokemon en su estado correspondiente
 
       /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -80,86 +109,43 @@ export default function App() {
 
       // DAÑOS
 
-      //Declaración de arreglos vacios donde se guardaran los daños
-      var arreglodetiposNHD = [];
-      var arreglodetiposRDDD = [];
-      var arreglodetiposHDDD = [];
-      var arreglodetiposHMDD = [];
+      //Declaración de arreglos vacios donde se guardaran los daños (De una vez les especifico que tendrán strings)
+      const arreglodetiposNHD: string[] = [];
+      const arreglodetiposRDDD: string[] = [];
+      const arreglodetiposHDDD: string[] = [];
+      const arreglodetiposHMDD: string[] = [];
 
-      const urltiposenarreglo = types.map((tipos: any) => tipos.type.url); //arreglo con las urls de los tipos
+      //Declaramos el for que hará un ciclo por cada tipo que sea el pokemon
+      for (const tipo of types) {
 
-      // En este ciclo for se recibe y procesa cada URL de los tipos que sea el pokemon
-      //Esto nos sirve para que en caso de que haya más de un tipo se puedan obtener los daños individualmente por tipo
-      for (let i = 0; i < urltiposenarreglo.length; i++) {
+        const { data } = await reqAPI.get(tipo.type.url); //Obtenermos la url con la info del tipo por medio del api
+        const { double_damage_from, double_damage_to, half_damage_to, no_damage_to } = data.damage_relations; //Desestructuramos para obtener los 4 datos a mostrar
 
-        const urlDelTipo = urltiposenarreglo[i]; //La url del tipo va a ser la actual del bucle for
-
-        //Obtenermos los datos que nos interresan del api
-        const { data: { damage_relations: { double_damage_from, double_damage_to, half_damage_to, no_damage_to } } } = await reqAPI.get(urlDelTipo);
-    
-        const NoLeHaceDaño = no_damage_to.map((ndt: any) => ndt.name); //Usamos la función map() para el elemento 'name' del objeto 'no_damage_to'
-        const nhd = NoLeHaceDaño.toString(); //Convertimos a String
-        arreglodetiposNHD.push(nhd); //Metemos al arreglo la info de los que no le hace daño 
-    
-        const RecibeDobleDeDañoDe = double_damage_from.map((ddf: any) => ddf.name); //Usamos la función map() para el elemento 'name' del objeto 'double_damage_from'
-        const rddd = RecibeDobleDeDañoDe.toString();//Convertimos a String
-        arreglodetiposRDDD.push(rddd);//Metemos al arreglo la info de los que no le hace daño 
-    
-        const HaceElDobleDeDaño = double_damage_to.map((ddt: any) => ddt.name); //Usamos la función map() para el elemento 'name' del objeto 'double_damage_to'
-        const hddd = HaceElDobleDeDaño.toString();//Convertimos a String
-        arreglodetiposHDDD.push(hddd);//Metemos al arreglo la info de los que no le hace daño 
-    
-        const HaceLaMitadDeDaño = half_damage_to.map((hdt: any) => hdt.name); //Usamos la función map() para el elemento 'name' del objeto 'half_damage_to'
-        const hmdd = HaceLaMitadDeDaño.toString();//Convertimos a String
-        arreglodetiposHMDD.push(hmdd);//Metemos al arreglo la info de los que no le hace daño 
+        //Hacemos el push a cada arreglo, además utlizamos la funcion map() para obetener especificamente el nombre de cada tipo
+        arreglodetiposNHD.push(...no_damage_to.map((ndt: any) => ndt.name));
+        arreglodetiposRDDD.push(...double_damage_from.map((ddf: any) => ddf.name));
+        arreglodetiposHDDD.push(...double_damage_to.map((ddt: any) => ddt.name));
+        arreglodetiposHMDD.push(...half_damage_to.map((hdt: any) => hdt.name));
       }
 
-      
-      let filteredarreglodetiposHMDD = arreglodetiposHMDD.filter(elm => elm); //Eliminando elementos vacios del arreglo (en caso de que hayan)
-      let stringHMDD = filteredarreglodetiposHMDD.toString() //Convirtiendo el arreglo a String
-      stringHMDD = Array.from(new Set(stringHMDD.split(','))).toString(); //Eliminando elementos duplicados (en caso de que haya alguno)
-      let stringHMDDfinal = stringHMDD.split(",").join(", "); //Separando con , y 'espacio' cada elemento
-      
-      //En caso de que no haya elementos se ponen lineas "------"
-      if (stringHMDDfinal == "") {
-        stringHMDDfinal = "-----"
-      }
+      //Función para convertir arreglos a string y ponerle formato de "coma y espacio"
+      const processTypeArray = (typeArray: any) => {
+        // Filtrar elementos vacíos y convertir el arreglo a string
+        let typeString = typeArray.filter(Boolean).toString();
+        // Eliminar elementos duplicados y separar con ", "
+        typeString = [...new Set(typeString.split(","))].join(", ");
+        // En caso de que no haya elementos, poner "-----"
+        if (typeString === "") {
+        typeString = "-----";
+        }
+        return typeString;
+      };
 
-      let filteredarreglodetiposHDDD = arreglodetiposHDDD.filter(elm => elm); //Eliminando elementos vacios del arreglo (en caso de que hayan)
-      let stringHDDD = filteredarreglodetiposHDDD.toString() //Convirtiendo el arreglo a String
-      stringHDDD = Array.from(new Set(stringHDDD.split(','))).toString(); //Eliminando elementos duplicados (en caso de que haya alguno)
-      let stringHDDDfinal = stringHDDD.split(",").join(", "); //Separando con , y 'espacio' cada elemento
-
-      //En caso de que no haya elementos se ponen lineas "------"
-      if (stringHDDDfinal == "") {
-        stringHDDDfinal = "-----"
-      }
-
-      let filteredarreglodetiposRDDD = arreglodetiposRDDD.filter(elm => elm); //Eliminando elementos vacios del arreglo (en caso de que hayan)
-      let stringRDDD = filteredarreglodetiposRDDD.toString() //Convirtiendo el arreglo a String
-      stringRDDD = Array.from(new Set(stringRDDD.split(','))).toString();  //Eliminando elementos duplicados (en caso de que haya alguno)
-      let stringRDDDfinal = stringRDDD.split(",").join(", "); //Separando con , y 'espacio' cada elemento
-
-      //En caso de que no haya elementos se ponen lineas "------"
-      if (stringRDDDfinal == "") {
-        stringRDDDfinal = "-----"
-      }
-
-      let filteredarreglodetiposNHD = arreglodetiposNHD.filter(elm => elm); //Eliminando elementos vacios del arreglo (en caso de que hayan)
-      let stringNHD = filteredarreglodetiposNHD.toString() //Convirtiendo el arreglo a String
-      stringNHD = Array.from(new Set(stringNHD.split(','))).toString(); //Eliminando elementos duplicados (en caso de que haya alguno)
-      let stringNHDfinal = stringNHD.split(",").join(", "); //Separando con , y 'espacio' cada elemento
-
-      //En caso de que no haya elementos se ponen lineas "------"
-      if (stringNHDfinal == "") {
-        stringNHDfinal = "-----"
-      }
-
-      //Guardamos los daños en sus estados correspondientes
-      setMakeHalfDamage(stringHMDDfinal);
-      setMakeDoubleDamage(stringHDDDfinal);
-      setRecieveDoubleDamage(stringRDDDfinal);
-      setNoMakeDamage(stringNHDfinal);
+      //Guardamos los daños en sus estados correspondientes, el 'processTypeArray' los convierte a string y el 'traducirTiposPokemon' los traduce a español
+      setMakeHalfDamage(traducirTiposPokemon(processTypeArray(arreglodetiposHMDD)));
+      setMakeDoubleDamage(traducirTiposPokemon(processTypeArray(arreglodetiposHDDD)));
+      setRecieveDoubleDamage(traducirTiposPokemon(processTypeArray(arreglodetiposRDDD)));
+      setNoMakeDamage(traducirTiposPokemon(processTypeArray(arreglodetiposNHD)));
 
       /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -216,7 +202,8 @@ export default function App() {
         if (i > 0) {
           resultado += " -> "; // Le añadimos a cada Pokemon(tipo) un "->" para separalo del siguiente pokemon
         }
-        resultado += namesOfEvoArray[i] + " (" + typesOfEvoArray[i] + ")"; //Juntamos todo en el formato
+        const TipoDeCadEvoTraducido =  traducirTiposPokemon(typesOfEvoArray[i])
+        resultado += namesOfEvoArray[i] + " (" + TipoDeCadEvoTraducido + ")"; //Juntamos todo en el formato
       }
 
       setEvolution(resultado); //Guardamos la cadena evolutiva en el estado
@@ -359,6 +346,6 @@ const styles = StyleSheet.create({
     marginTop: 280,
     marginLeft: 110,
     fontSize: 25,
-    fontWeight: 'bold'
-  }
+    fontWeight: 'bold'
+  }
 });
